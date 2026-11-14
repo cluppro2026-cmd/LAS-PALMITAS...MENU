@@ -1,0 +1,8 @@
+name = "las-palmitas-menu-publisher"
+main = "worker.js"
+compatibility_date = "2026-11-14"
+
+[vars]
+OWNER = "cluppro2026-cmd"
+REPO = "LAS-PALMITAS...MENU"
+BRANCH = "main"

@@ -19,29 +19,24 @@
   </style>
 </head>
 <body>
-  <header>
-    <img src="logo.svg" alt="Logotipo de Las Palmitas">
-    <h1>Las Palmitas</h1>
-    <p>Guira de Melena</p>
-  </header>
+  <header><img src="logo.svg" alt="Logotipo de Las Palmitas"><h1>Las Palmitas</h1><p>Guira de Melena</p></header>
   <nav id="nav" aria-label="Categorías del menú"></nav>
-  <main id="main"></main>
+  <main id="main" aria-live="polite">Cargando carta…</main>
   <a class="wa" href="https://wa.me/5350086675" target="_blank" rel="noopener">WhatsApp · Pide información</a>
-  <script src="menu.js"></script>
   <script>
     const ORDER=["Sugerencias del Chef","Entrantes","Cremas","Pastas","Del Mar","Pollo","Cerdo","Res","Arroz","Viandas","Salsas","Postres","Coctelería","Líneas de Whisky","Líneas de Ron","Café","Bebidas"];
     function esc(s){return String(s).replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]))}
     function fmt(p){return p==null||p===''?'':Number(p).toLocaleString('de-DE')+' cup'}
-    const items=window.MENU||[];
-    const cats=ORDER.filter(c=>items.some(i=>i.c===c));
-    items.forEach(i=>{if(!cats.includes(i.c))cats.push(i.c)});
-    const nav=document.getElementById('nav'),main=document.getElementById('main');
-    nav.innerHTML='<button class="chip on" data-c="">Todo</button>'+cats.map(c=>'<button class="chip" data-c="'+esc(c)+'">'+esc(c)+'</button>').join('');
-    main.innerHTML=cats.map(c=>'<section class="card" data-c="'+esc(c)+'"><h2>'+esc(c)+'</h2><ul>'+items.filter(i=>i.c===c).map(i=>'<li><span>'+esc(i.n)+'</span><i></i><b>'+fmt(i.p)+'</b></li>').join('')+'</ul></section>').join('');
-    nav.querySelectorAll('.chip').forEach(b=>b.addEventListener('click',()=>{
-      nav.querySelectorAll('.chip').forEach(x=>x.classList.toggle('on',x===b));
-      main.querySelectorAll('.card').forEach(s=>s.hidden=!!b.dataset.c&&s.dataset.c!==b.dataset.c);
-    }));
+    function showMenu(items){
+      const cats=ORDER.filter(c=>items.some(i=>i.c===c));items.forEach(i=>{if(!cats.includes(i.c))cats.push(i.c)});
+      const nav=document.getElementById('nav'),main=document.getElementById('main');
+      nav.innerHTML='<button class="chip on" data-c="">Todo</button>'+cats.map(c=>'<button class="chip" data-c="'+esc(c)+'">'+esc(c)+'</button>').join('');
+      main.innerHTML=cats.map(c=>'<section class="card" data-c="'+esc(c)+'"><h2>'+esc(c)+'</h2><ul>'+items.filter(i=>i.c===c).map(i=>'<li><span>'+esc(i.n)+'</span><i></i><b>'+fmt(i.p)+'</b></li>').join('')+'</ul></section>').join('');
+      nav.querySelectorAll('.chip').forEach(b=>b.addEventListener('click',()=>{nav.querySelectorAll('.chip').forEach(x=>x.classList.toggle('on',x===b));main.querySelectorAll('.card').forEach(s=>s.hidden=!!b.dataset.c&&s.dataset.c!==b.dataset.c)}));
+    }
+    fetch('menu.js?v='+Date.now(),{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('No se pudo cargar el menú');return r.text()}).then(code=>{
+      const match=code.match(/^\s*window\.MENU\s*=\s*(\[[\s\S]*\])\s*;?\s*$/);if(!match)throw Error('El archivo del menú no tiene el formato esperado');showMenu(JSON.parse(match[1]));
+    }).catch(()=>{document.getElementById('main').textContent='No se pudo cargar la carta. Comprueba tu conexión e inténtalo de nuevo.'});
   </script>
 </body>
 </html>
