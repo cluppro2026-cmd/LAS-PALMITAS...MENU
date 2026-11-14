@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#06180f"><title>Admin · Las Palmitas</title>
+  <link rel="icon" href="logo.jpg">
+  <style>
+    *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top,#0f3a26,#06180f 70%);color:#f3efe0;font-family:system-ui,sans-serif;min-height:100vh;padding-bottom:40px}
+    .box{max-width:700px;margin:16px auto;padding:0 14px}.card{background:#0b2418e6;border:1px solid #9cff3a55;border-radius:18px;padding:18px;margin:14px 0;box-shadow:0 0 18px #9cff3a22}
+    h2{text-align:center;font-family:"Brush Script MT",cursive;font-size:32px;margin:0 0 12px;color:#b6ff5c;text-shadow:0 0 8px #9cff3a}
+    input,select{background:#06180f;color:#f3efe0;border:1px solid #9cff3a66;border-radius:10px;padding:9px;font-size:15px;min-width:0}.row{display:flex;gap:6px;margin:8px 0;align-items:center}.row .n{flex:1}.row .p{width:110px}
+    .btn{border:0;border-radius:10px;padding:9px 14px;font-weight:700;font-size:15px;cursor:pointer}.g{background:#9cff3a;color:#06180f;box-shadow:0 0 12px #9cff3a}.r{background:#ff4d6d;color:#fff;padding:8px 11px}
+    .bar{position:sticky;top:0;z-index:5;background:#06180feF;padding:10px 14px;display:flex;gap:8px;justify-content:center}.help{font-size:13px;opacity:.9;line-height:1.6}
+  </style>
+</head>
+<body>
+  <div id="login" class="box" style="text-align:center;margin-top:60px">
+    <img src="logo.jpg" alt="Las Palmitas" style="width:120px;border-radius:50%" onerror="this.hidden=true">
+    <h2>Panel admin</h2><input id="pw" type="password" placeholder="Contraseña" autocomplete="current-password">
+    <button class="btn g" id="loginButton">Entrar</button><p id="err" style="color:#ff4d6d"></p>
+  </div>
+  <div id="panel" hidden>
+    <div class="bar"><button class="btn g" id="saveButton">💾 Descargar menú actualizado</button><a class="btn" style="background:#0c2a1b;color:#f3efe0;text-decoration:none" href="index.html" target="_blank" rel="noopener">Ver carta</a></div>
+    <div class="box">
+      <div class="card"><h2>Nueva oferta</h2><div class="row"><select id="nc" aria-label="Categoría"></select></div><div class="row"><input id="nn" class="n" placeholder="Nombre"><input id="np" class="p" type="number" placeholder="Precio"><button class="btn g" id="addButton">+</button></div></div>
+      <div id="list"></div>
+      <div class="card help"><h2>Cómo publicar los cambios</h2>1. Pulsa «Descargar menú actualizado»; se descargará <b>menu.js</b>.<br>2. Sube ese archivo al repositorio de GitHub en la carpeta raíz, reemplazando el archivo existente.<br>3. Cloudflare Pages publicará la actualización automáticamente.<br><br>Los cambios que no hayas descargado se guardan solamente en este navegador.</div>
+    </div>
+  </div>
+  <script src="menu.js"></script>
+  <script>
+    const ORDER=["Sugerencias del Chef","Entrantes","Cremas","Pastas","Del Mar","Pollo","Cerdo","Res","Arroz","Viandas","Salsas","Postres","Coctelería","Líneas de Whisky","Líneas de Ron","Café","Bebidas"];
+    const KEY='lp-admin-draft';let M;
+    function esc(s){return String(s).replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]))}
+    function login(){if(document.getElementById('pw').value==='yasmany2026'){sessionStorage.setItem('lp-ok','1');start()}else document.getElementById('err').textContent='Contraseña incorrecta'}
+    function start(){document.getElementById('login').hidden=true;document.getElementById('panel').hidden=false;const d=localStorage.getItem(KEY);M=d?JSON.parse(d):JSON.parse(JSON.stringify(window.MENU||[]));render()}
+    function cats(){const c=ORDER.slice();M.forEach(i=>{if(!c.includes(i.c))c.push(i.c)});return c}
+    function keep(){localStorage.setItem(KEY,JSON.stringify(M))}
+    function render(){const cs=cats();document.getElementById('nc').innerHTML=cs.map(c=>'<option>'+esc(c)+'</option>').join('');
+      document.getElementById('list').innerHTML=cs.filter(c=>M.some(i=>i.c===c)).map(c=>'<div class="card"><h2>'+esc(c)+'</h2>'+M.map((i,k)=>i.c!==c?'':'<div class="row"><input class="n" aria-label="Nombre" value="'+esc(i.n)+'" data-name="'+k+'"><input class="p" aria-label="Precio" type="number" value="'+(i.p==null?'':i.p)+'" data-price="'+k+'"><button class="btn r" data-delete="'+k+'" aria-label="Eliminar">✕</button></div>').join('')+'</div>').join('');
+      document.querySelectorAll('[data-name]').forEach(x=>x.oninput=()=>{M[Number(x.dataset.name)].n=x.value;keep()});
+      document.querySelectorAll('[data-price]').forEach(x=>x.oninput=()=>{M[Number(x.dataset.price)].p=x.value===''?null:Number(x.value);keep()});
+      document.querySelectorAll('[data-delete]').forEach(x=>x.onclick=()=>del(Number(x.dataset.delete)));
+    }
+    function del(k){if(confirm('¿Quitar «'+M[k].n+'»?')){M.splice(k,1);keep();render()}}
+    function add(){const n=document.getElementById('nn').value.trim();if(!n)return alert('Escribe el nombre');const p=document.getElementById('np').value;M.push({c:document.getElementById('nc').value,n,p:p===''?null:Number(p)});document.getElementById('nn').value='';document.getElementById('np').value='';keep();render()}
+    function save(){const t='window.MENU = '+JSON.stringify(M.filter(i=>i.n.trim()))+';\n';const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:'text/javascript'}));a.download='menu.js';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000);window.MENU=JSON.parse(JSON.stringify(M));alert('Descargado menu.js. Súbelo a la raíz del repositorio reemplazando el anterior.')}
+    document.getElementById('loginButton').addEventListener('click',login);document.getElementById('pw').addEventListener('keydown',e=>{if(e.key==='Enter')login()});document.getElementById('addButton').addEventListener('click',add);document.getElementById('saveButton').addEventListener('click',save);if(sessionStorage.getItem('lp-ok'))start();
+  </script>
+</body>
+</html>

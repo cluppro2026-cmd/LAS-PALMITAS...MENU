@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#06180f">
+  <title>Menú · Las Palmitas</title>
+  <link rel="icon" href="logo.jpg">
+  <style>
+    *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top,#0f3a26,#06180f 70%);color:#f3efe0;font-family:system-ui,sans-serif;min-height:100vh;padding-bottom:90px}
+    header{text-align:center;padding:24px 16px 0}header img{width:160px;height:160px;object-fit:cover;border-radius:50%;box-shadow:0 0 30px #9cff3a66}header h1{color:#b6ff5c;text-shadow:0 0 12px #9cff3a;font-size:clamp(28px,6vw,48px);margin:8px 0}
+    nav{position:sticky;top:0;z-index:5;background:#06180fe6;backdrop-filter:blur(6px);padding:8px 12px;overflow-x:auto;white-space:nowrap;margin-top:16px}
+    .chip{border:1px solid #9cff3a66;background:#0c2a1b;color:#f3efe0;border-radius:999px;padding:8px 14px;margin-right:6px;font-size:14px;cursor:pointer}.chip.on{background:#9cff3a;color:#06180f;box-shadow:0 0 12px #9cff3a;font-weight:700}
+    main{max-width:1000px;margin:16px auto;padding:0 16px;display:grid;gap:16px}@media(min-width:640px){main{grid-template-columns:1fr 1fr}}
+    .card{background:#0b2418e6;border:1px solid #9cff3a55;border-radius:18px;padding:18px;box-shadow:0 0 18px #9cff3a22,inset 0 0 20px #3ae6ff11}
+    h2{text-align:center;font-family:"Brush Script MT",cursive;font-size:32px;margin:0 0 12px;color:#b6ff5c;text-shadow:0 0 8px #9cff3a,0 0 18px #9cff3a88}
+    ul{list-style:none;margin:0;padding:0}li{display:flex;align-items:baseline;gap:8px;font-size:14px;margin:8px 0}li i{flex:1;border-bottom:2px dotted #9cff3a44}li b{color:#5cf2ff;text-shadow:0 0 6px #3ae6ff;white-space:nowrap}
+    .wa{position:fixed;right:16px;bottom:16px;display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:999px;background:linear-gradient(135deg,#25d366,#128c4a);color:#fff;text-decoration:none;font-size:12px;font-weight:700;border:1px solid #ffffff55;box-shadow:0 0 16px #25d36699}
+  </style>
+</head>
+<body>
+  <header>
+    <img src="logo.jpg" alt="Las Palmitas" onerror="this.hidden=true">
+    <h1>Las Palmitas</h1>
+    <p>Guira de Melena</p>
+  </header>
+  <nav id="nav" aria-label="Categorías del menú"></nav>
+  <main id="main"></main>
+  <a class="wa" href="https://wa.me/5350086675" target="_blank" rel="noopener">WhatsApp · Pide información</a>
+  <script src="menu.js"></script>
+  <script>
+    const ORDER=["Sugerencias del Chef","Entrantes","Cremas","Pastas","Del Mar","Pollo","Cerdo","Res","Arroz","Viandas","Salsas","Postres","Coctelería","Líneas de Whisky","Líneas de Ron","Café","Bebidas"];
+    function esc(s){return String(s).replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]))}
+    function fmt(p){return p==null||p===''?'':Number(p).toLocaleString('de-DE')+' cup'}
+    const items=window.MENU||[];
+    const cats=ORDER.filter(c=>items.some(i=>i.c===c));
+    items.forEach(i=>{if(!cats.includes(i.c))cats.push(i.c)});
+    const nav=document.getElementById('nav'),main=document.getElementById('main');
+    nav.innerHTML='<button class="chip on" data-c="">Todo</button>'+cats.map(c=>'<button class="chip" data-c="'+esc(c)+'">'+esc(c)+'</button>').join('');
+    main.innerHTML=cats.map(c=>'<section class="card" data-c="'+esc(c)+'"><h2>'+esc(c)+'</h2><ul>'+items.filter(i=>i.c===c).map(i=>'<li><span>'+esc(i.n)+'</span><i></i><b>'+fmt(i.p)+'</b></li>').join('')+'</ul></section>').join('');
+    nav.querySelectorAll('.chip').forEach(b=>b.addEventListener('click',()=>{
+      nav.querySelectorAll('.chip').forEach(x=>x.classList.toggle('on',x===b));
+      main.querySelectorAll('.card').forEach(s=>s.hidden=!!b.dataset.c&&s.dataset.c!==b.dataset.c);
+    }));
+  </script>
+</body>
+</html>
